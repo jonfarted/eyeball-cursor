@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eyeball Mouse Cursor</title>
+  </head>
+  <body>
+    <div
+      id="dot"
+      style="height: 10px; width: 10px; left: 42px; top: 571px"
+    ></div>
+    <div id="circle"></div>
+    <script>
+      const circle = document.getElementById("circle");
+      const dot = document.getElementById("dot");
+
+      // Prevents the animation to start, when there is no mouse present.
+      let startedAnimation = false;
+
+      // Div X & Y coordinates, to replace mouse cursor coordinates.
+      let x = 0;
+      let y = 0;
+
+      // Mouse cursor X and Y coordinates, -100 makes it start off screen.
+      let mX = -100;
+      let mY = -100;
+
+      const rad = 30;
+
+      // Current scroll position.
+      let pageYOffset = window.pageYOffset || 0;
+
+      function animate() {
+        // Distance between circle and circle replacement.
+        const dX = mX - x;
+        const dY = mY - y;
+
+        // Velocity calculation.
+        let vel = Math.sqrt(dX * dX + dY * dY) / 70;
+        // Cap velocity at value of 1.
+        if (vel > 1) {
+          // Reinstate velocity at max speed to jump circle to next position.
+          vel = 0.999;
+        }
+
+        // Rotation calculation
+        const rot = Math.atan2(dY, dX);
+
+        // Circle replacement X and Y calculation.
+        x += dX * vel;
+        y += dY * vel;
+
+        circle.style.height = rad + "px";
+        circle.style.width = rad + "px";
+        circle.style.left = x - rad / 1.75 + "px";
+        circle.style.top = y - rad / 1.75 + "px";
+        circle.style.transform = `rotate(${rot + Math.PI / 2}rad) scaleY(${
+          1 + vel
+        }) scaleX(${1 - vel / 1.5})`;
+
+        dot.style.height = rad / 3 + "px";
+        dot.style.width = rad / 3 + "px";
+        dot.style.left = mX + "px";
+        dot.style.top = mY + "px";
+
+        requestAnimationFrame(animate);
+      }
+
+      document.addEventListener("mousemove", function (event) {
+        // Start the animation when we receive the first 'mousemove' event.
+        if (!startedAnimation) {
+          startedAnimation = true;
+          animate();
+        }
+
+        // When the mouse moves, take the X and Y and pass it to mX and mY.
+        mX = event.pageX;
+        mY = event.pageY;
+      });
+
+      document.addEventListener("scroll", function (event) {
+        // Adjust cursor position on scroll.
+        if (pageYOffset > window.pageYOffset) {
+          mY = mY - (pageYOffset - window.pageYOffset);
+        } else if (pageYOffset < window.pageYOffset) {
+          mY = mY + (window.pageYOffset - pageYOffset);
+        }
+
+        pageYOffset = window.pageYOffset;
+      });
+    </script>
+    <style>
+      body {
+        background-color: rgb(34, 199, 34);
+      }
+      @media (any-hover: none) {
+        #circle,
+        #dot {
+          display: none;
+        }
+      }
+
+      @media (any-hover: hover) {
+        * {
+          cursor: none !important;
+        }
+
+        #circle {
+          position: absolute;
+          transform: translate(-50%, -50%);
+          border: 3px solid black;
+          border-radius: 50%;
+          background-color: white;
+          z-index: 500000;
+          pointer-events: none;
+        }
+
+        #dot {
+          position: absolute;
+          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          background-color: black;
+          pointer-events: none;
+          z-index: 500001;
+        }
+      }
+    </style>
+  </body>
+</html>
